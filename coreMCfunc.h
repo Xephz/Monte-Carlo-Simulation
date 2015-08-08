@@ -1,7 +1,6 @@
 #ifndef _CORE_MC_FUNC_H_
 #define _CORE_MC_FUNC_H_
 
-
 #define maxClusters 10000
 typedef struct {
 	double x;
@@ -9,7 +8,6 @@ typedef struct {
 	double z;
 	int cluster;
 }particle;//refers to an individual particle
-
 typedef struct{
 	int numClusters;
 	particle clusters[maxClusters];

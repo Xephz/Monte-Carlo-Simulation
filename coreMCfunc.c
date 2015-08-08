@@ -86,16 +86,13 @@ double Potential(particle x,particle *particles,double xMax,double yMax,double z
 	for(i=0;i<numParticles;i++){
 		//finds shortest distance to an instance of particles[i]
 		d = SDistance(*(particles+i),x,xMax,yMax,zMax);
-		//adds potential to sum if d is bellow trunctation cutoff
+		//adds potential to sum if d is bellow truncation cutoff
 		if(d<truncationDist){
 			out += PairPotential(d);
 		}
 	}
 	return out;
 }
-
-
-
 
 double PairPotential(double r){
 	double ret =  exp(-pow((r),4));

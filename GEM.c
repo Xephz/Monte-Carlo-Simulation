@@ -8,7 +8,6 @@
 *header files also contain descriptions of the purpose of each function contained within*
 ****************************************************************************************/
 
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
@@ -19,15 +18,11 @@
 #include"particleIO.h"//contains functions linked to input and output and population of particle states
 #include"analysis.h"//contains functions linked to analyising a configuration of particles
 
-
 //define DEBUG //include this line to give same random numbers each time
 
-
-//main sequence
 int main(int argc,char*argv[]){
   
-  //parameters
-
+	//parameters
 	int numParticles = 450*8;//the number of particles in the first simulation, density is this number/100
 	int repeats = 1;
 	int particleIncrement = 200;//the amount that the number of particles increases by each loop
@@ -42,13 +37,11 @@ int main(int argc,char*argv[]){
 	int cycles =10;//number of moves of each particle(set at >= 10 if running any cycles
 	double truncation = 2;//the distance at whcih potential is ignored-measured in multiples of sigma
 	double clusterDist = 0.25;//sets the maximum distance at which particles are considered to be in the same cluster
-
 	
 	//initializing random number generator
 	double *randoms = malloc(sizeof(double)*100000);//used to store random numbers & avoid repeatedly calling ranvec
 	long int currentRandom = 0;//indicates how far through randoms[] we are
 	Init_Randoms(randoms,&currentRandom);
-
 
 	//declare variables and allocate memory
 	int accepted = 0;//counts accepted moves
@@ -61,9 +54,8 @@ int main(int argc,char*argv[]){
 	double startParticles = numParticles;
 	double avgClusterSize;
 
-
 	//start simulations
-	//these loops allow for multiple simulation in different conditions with one execution
+	//these loops allow for multiple simulations in different conditions with one execution
 	for(l=0;l<repeats;l++){
 		numParticles = startParticles;
 		for(k=0;k<particleLoops;k++){
@@ -86,26 +78,24 @@ int main(int argc,char*argv[]){
 					}
 				}
 				
-				
 				//output measures for final state*/
 				char outName[100];//a string used to name the output files, this string changes various time before each output
-				//sprintf(outName,"d%.2lfT%.2lfm%.2lf",(double)numParticles/(xMax*yMax*zMax),temp,moveDist);
-				//printf("acceptance rate: %lf\n",(double)accepted/(double)(accepted+rejected));
-				//*(bigClusters) = ID_Clusters(particles,&avgClusterSize,0,xMax,yMax,zMax,numParticles,clusterDist);
-				//*(allClusters) = ID_Clusters(particles,&avgClusterSize,1,xMax,yMax,zMax,numParticles,clusterDist);
-				//Output_Cluster_Distribution(outName,*(allClusters),particles,avgClusterSize,xMax,yMax,zMax,numParticles);
-				//strcat(outName,"c");
-				//Output_jmol(bigClusters->clusters,outName,5,bigClusters->numClusters,xMax,yMax,zMax);
-				//Output_gr(outName,bigClusters->numClusters,bigClusters->clusters,xMax,yMax,zMax);
-				//Output_100avg_Cluster_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist,clusterDist);
-				//*strstr(outName,"c")='\0';
+				sprintf(outName,"d%.2lfT%.2lfm%.2lf",(double)numParticles/(xMax*yMax*zMax),temp,moveDist);
+				printf("acceptance rate: %lf\n",(double)accepted/(double)(accepted+rejected));
+				*(bigClusters) = ID_Clusters(particles,&avgClusterSize,0,xMax,yMax,zMax,numParticles,clusterDist);
+				*(allClusters) = ID_Clusters(particles,&avgClusterSize,1,xMax,yMax,zMax,numParticles,clusterDist);
+				Output_Cluster_Distribution(outName,*(allClusters),particles,avgClusterSize,xMax,yMax,zMax,numParticles);
+				strcat(outName,"c");
+				Output_jmol(bigClusters->clusters,outName,5,bigClusters->numClusters,xMax,yMax,zMax);
+				Output_gr(outName,bigClusters->numCluters,bigClusters->clusters,xMax,yMax,zMax);
+				Output_100avg_Cluster_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist,clusterDist);
+				*strstr(outName,"c")='\0';
 				strcat(outName,"p");
 				Output_jmol(particles,outName,5,numParticles,xMax,yMax,zMax);
-				//Output_gr(outName,numParticles,particles,xMax,yMax,zMax);
-				//Output_100avg_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
-				//*strstr(outName,"p")='\0';*/
-
-				
+				Output_gr(outName,numParticles,particles,xMax,yMax,zMax);
+				Output_100avg_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+				*strstr(outName,"p")='\0';
+			
 				//update parameters for next simulation
 				temp += tempIncrement;
 			}
