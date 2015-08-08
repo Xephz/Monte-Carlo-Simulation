@@ -1,0 +1,5 @@
+GEM
+*.o
+*.xyz
+*.GRAPH
+*.DIST
