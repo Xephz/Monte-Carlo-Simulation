@@ -194,13 +194,15 @@ void Output_Cluster_Distribution(char *name,clusters clusters,particle *particle
 	return;
 }
 
-void Output_100avg_AvgCluster(particle *particles, double *randoms, long int *currentRandom,int *accepted, int *rejected,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
+void Output_100avg_AvgCluster(particle *particles, double *randoms, long int *currentRandom,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
 	double reads[100];
 	int i;
+	int accepted = 0;//these are just dummys as we don't really care if the moves are accepted
+	int rejected = 0;
 	//first gather our data set
 	for(i=0;i<100;i++){
 		ID_Clusters(particles,(reads+i),1,xMax,yMax,zMax,numParticles,clusterDist);
-		Move_Particles(particles, randoms, currentRandom, accepted, rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+		Move_Particles(particles, randoms, currentRandom, &accepted, &rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
 		printf("%d   ",i);
 	}
 	//now find the mean
@@ -219,13 +221,15 @@ void Output_100avg_AvgCluster(particle *particles, double *randoms, long int *cu
 	return;
 }
 
-void Output_100avg_ClusterDist(char *name,particle *particles, double *randoms, long int *currentRandom,int *accepted, int *rejected,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
+void Output_100avg_ClusterDist(char *name,particle *particles, double *randoms, long int *currentRandom,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
 	int reads_num_of_size[30][100];
 	clusters clusters;
 	int num_of_size[30];
 	int *size_of_cluster = malloc(sizeof(int)*maxClusters);
 	int i,j,k;
 	double dummy;
+	int accepted = 0;//these are dummys as we don't actually care how many moves are rejected
+	int rejected = 0;
 //gather data
 	for(k=0;k<100;k++){
 		clusters = ID_Clusters(particles,&dummy, 1,xMax,yMax,zMax,numParticles,clusterDist);
@@ -251,7 +255,7 @@ void Output_100avg_ClusterDist(char *name,particle *particles, double *randoms, 
 			reads_num_of_size[i][k] = num_of_size[i];
 		}
 		//move the system on
-		Move_Particles(particles, randoms, currentRandom, accepted, rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+		Move_Particles(particles, randoms, currentRandom, &accepted, &rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
 		printf("%d   ",k);
 	}
 //take the averages
@@ -347,13 +351,15 @@ void Output_100avg_ClusterDist(char *name,particle *particles, double *randoms, 
 	return;
 }
 
-void Output_100avg_gr(char *name, particle *particles, double *randoms, long int *currentRandom,int *accepted, int *rejected, int numToOutput,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist){
+void Output_100avg_gr(char *name, particle *particles, double *randoms, long int *currentRandom, int numToOutput,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist){
 	int xMaxi = ceil(xMax);
 	int i,j,k;
 	int dr = 50;//the resiprical of the spacing
 	int distances[numToOutput];
 	long int num_at_dr[xMaxi*dr];
 	double read_gr[xMaxi*dr][100];
+	int accepted = 0;
+	int rejected = 0;//these are dummy variables as we don't actually care how many moves are accepted
 //first we need our sample
 	for(k=0;k<100;k++){
 		//initialises the count array
@@ -375,7 +381,7 @@ void Output_100avg_gr(char *name, particle *particles, double *randoms, long int
 		for(i=1;i<xMaxi*dr;i++){
 			read_gr[i][k] = ((double)num_at_dr[i]*xMax*yMax*zMax*(double)dr*(double)(pow(dr,2)))/((double)4*(double)(i)*(double)(i)*(double)numToOutput*(double)numToOutput*M_PI);//the dr^2 is to make normalising work, not sure why we need it
 		}
-		Move_Particles(particles,randoms,currentRandom,accepted,rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+		Move_Particles(particles,randoms,currentRandom,&accepted,&rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
 		printf("%d   ",k);
 	}
 //now we take averages
@@ -470,7 +476,7 @@ void Output_100avg_gr(char *name, particle *particles, double *randoms, long int
 	return;
 }
 
-void Output_100avg_Cluster_gr(char *name, particle *particles, double *randoms, long int *currentRandom,int *accepted, int *rejected, int numToOutput,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
+void Output_100avg_Cluster_gr(char *name, particle *particles, double *randoms, long int *currentRandom, int numToOutput,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,double clusterDist){
 	double dummy;
 	clusters clusters;
 	int xMaxi = ceil(xMax);
@@ -479,6 +485,8 @@ void Output_100avg_Cluster_gr(char *name, particle *particles, double *randoms, 
 	int *distances = malloc(sizeof(int)*numParticles);
 	long int num_at_dr[xMaxi*dr];
 	double read_gr[xMaxi*dr][100];
+	int accepted = 0; //dummy variables
+	int rejected = 0;
 //first we need our sample
 	for(k=0;k<100;k++){
 		clusters = ID_Clusters(particles,&dummy,1,xMax,yMax,zMax,numParticles,clusterDist);
@@ -501,7 +509,7 @@ void Output_100avg_Cluster_gr(char *name, particle *particles, double *randoms, 
 		for(i=1;i<xMaxi*dr;i++){
 			read_gr[i][k] = ((double)num_at_dr[i]*xMax*yMax*zMax*(double)dr*(double)(pow(dr,2)))/((double)4*(double)(i)*(double)(i)*(double)clusters.numClusters*(double)clusters.numClusters*M_PI);//the dr^2 is to make normalising work, not sure why we need it
 		}
-		Move_Particles(particles,randoms,currentRandom,accepted,rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+		Move_Particles(particles,randoms,currentRandom,&accepted,&rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
 		printf("%d   ",k);
 	}
 //now we take averages

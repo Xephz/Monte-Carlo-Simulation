@@ -20,6 +20,8 @@
 
 //define DEBUG //include this line to give same random numbers each time
 
+void mainCycle(particle * particles,double * randoms,long int * currentRandom,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,int cycles);//this is the meat of the simulation, it runs the MC cycles to move the system into a low energy state.
+
 int main(int argc,char*argv[]){
   
 	//parameters
@@ -44,8 +46,6 @@ int main(int argc,char*argv[]){
 	Init_Randoms(randoms,&currentRandom);
 
 	//declare variables and allocate memory
-	int accepted = 0;//counts accepted moves
-	int rejected = 0;//counts rejected moves
 	int k,j,l;
 	particle *particles = malloc(sizeof(particle)*(numParticles+particleLoops*particleIncrement));
 	clusters *bigClusters = malloc(sizeof(clusters));
@@ -66,35 +66,15 @@ int main(int argc,char*argv[]){
 				Populate_Random(particles,randoms,&currentRandom,xMax,yMax,zMax,numParticles);
 
 				//main cycle
-				int i;
-				if(xMax<(2*truncation)){//checks that box is at least double truncation distance
-					printf("warning:box is too small for current parameters\n");
-				}
-				for(i=0;i<cycles;i++){
-					Move_Particles(particles,randoms,&currentRandom,&accepted,&rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
-					//prints progress
-					if(i%(cycles/10)==0){
-						printf("d%.2lfT%.2lfm%.2lfc%d: %d%%   acceptance rate:%lf\n",(double)numParticles/(xMax*yMax*zMax),temp,moveDist,cycles,(i*100)/cycles,(double)accepted/(accepted+rejected));
-					}
-				}
-				
+				mainCycle(particles,randoms,&currentRandom,xMax,yMax,zMax,truncation,numParticles,temp,moveDist,cycles);
 				//output measures for final state*/
-				char outName[100];//a string used to name the output files, this string changes various time before each output
-				sprintf(outName,"d%.2lfT%.2lfm%.2lf",(double)numParticles/(xMax*yMax*zMax),temp,moveDist);
-				printf("acceptance rate: %lf\n",(double)accepted/(double)(accepted+rejected));
 				*(bigClusters) = ID_Clusters(particles,&avgClusterSize,0,xMax,yMax,zMax,numParticles,clusterDist);
 				*(allClusters) = ID_Clusters(particles,&avgClusterSize,1,xMax,yMax,zMax,numParticles,clusterDist);
-				Output_Cluster_Distribution(outName,*(allClusters),particles,avgClusterSize,xMax,yMax,zMax,numParticles);
-				strcat(outName,"c");
-				Output_jmol(bigClusters->clusters,outName,5,bigClusters->numClusters,xMax,yMax,zMax);
-				Output_gr(outName,bigClusters->numCluters,bigClusters->clusters,xMax,yMax,zMax);
-				Output_100avg_Cluster_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist,clusterDist);
-				*strstr(outName,"c")='\0';
-				strcat(outName,"p");
-				Output_jmol(particles,outName,5,numParticles,xMax,yMax,zMax);
-				Output_gr(outName,numParticles,particles,xMax,yMax,zMax);
-				Output_100avg_gr(outName,particles,randoms,&currentRandom,&accepted,&rejected,numParticles,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
-				*strstr(outName,"p")='\0';
+				Output_Cluster_Distribution("Clusters",*(allClusters),particles,avgClusterSize,xMax,yMax,zMax,numParticles);
+				Output_jmol(bigClusters->clusters,"Clusters",5,bigClusters->numClusters,xMax,yMax,zMax);
+				Output_gr("Clusters",bigClusters->numClusters,bigClusters->clusters,xMax,yMax,zMax);
+				Output_jmol(particles,"Particles",5,numParticles,xMax,yMax,zMax);
+				Output_gr("Particles",numParticles,particles,xMax,yMax,zMax);
 			
 				//update parameters for next simulation
 				temp += tempIncrement;
@@ -109,4 +89,22 @@ int main(int argc,char*argv[]){
 	free(particles);
 	free(randoms);
 	return 0;
+}
+
+void mainCycle(particle * particles,double * randoms,long int * currentRandom,double xMax,double yMax,double zMax,double truncation,int numParticles,double temp,double moveDist,int cycles){
+				int i;
+				int accepted = 0;//counts accepted moves
+				int rejected = 0;//counts rejected moves
+				if(xMax<(2*truncation)){//checks that box is at least double truncation distance
+					printf("warning:box is too small for current parameters\n");
+				}
+				for(i=0;i<cycles;i++){
+					Move_Particles(particles,randoms,currentRandom,&accepted,&rejected,xMax,yMax,zMax,truncation,numParticles,temp,moveDist);
+					//prints progress
+					if(i%(cycles/10)==0){
+						printf("d%.2lfT%.2lfm%.2lfc%d: %d%%   acceptance rate:%lf\n",(double)numParticles/(xMax*yMax*zMax),temp,moveDist,cycles,(i*100)/cycles,(double)accepted/(accepted+rejected));
+					}
+				}
+				printf("acceptance rate: %lf\n",(double)accepted/(double)(accepted+rejected));
+				return;
 }
